@@ -4,7 +4,7 @@ Converts data from Android Tasks App into org-mode tasks.
 
 import argparse
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def main():
@@ -12,6 +12,11 @@ def main():
     args = parse_args()
 
     tasks = extract_tasks_from_file(args.tasksfile)
+
+    if args.today:
+        tasks = select_tasks_by_date(tasks, datetime.now().date())
+    elif args.tomorrow:
+        tasks = select_tasks_by_date(tasks, datetime.now().date() + timedelta(days=1))
 
     for task in tasks:
         print(org_format_task(task), "\n")
@@ -26,6 +31,10 @@ def parse_args():
         description="Converts data from Android Tasks App into org-mode tasks.")
 
     parser.add_argument("tasksfile", type=str, help="path of the tasks file")
+    parser.add_argument("--today", action="store_true",
+                        help="select tasks with today as due date")
+    parser.add_argument("--tomorrow", action="store_true",
+                        help="select tasks with tomorrow as due date")
 
     return parser.parse_args()
 
@@ -36,6 +45,21 @@ def extract_tasks_from_file(filepath):
         data = json.load(file)
 
     return data["data"]["tasks"]
+
+
+def select_tasks_by_date(tasks, date):
+
+    selected_tasks = []
+
+    for task in tasks:
+        due_date_timestamp = task["task"]["dueDate"]
+        if due_date_timestamp in ("", 0):
+            continue
+        due_datetime = datetime.fromtimestamp(int(str(due_date_timestamp)[:-3]))
+        if due_datetime.date() == date:
+            selected_tasks.append(task)
+
+    return selected_tasks
 
 
 def org_format_task(task):
