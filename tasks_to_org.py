@@ -14,12 +14,18 @@ def main():
     tasks = extract_tasks_from_file(args.tasksfile)
 
     if args.today:
-        tasks = select_tasks_by_date(tasks, datetime.now().date())
-    elif args.tomorrow:
-        tasks = select_tasks_by_date(tasks, datetime.now().date() + timedelta(days=1))
+        date = datetime.now().date()
+        for task in select_tasks_by_date(tasks, date):
+            print(org_format_task(task), "\n")
 
-    for task in tasks:
-        print(org_format_task(task), "\n")
+    elif args.tomorrow:
+        date = datetime.now().date() + timedelta(days=1)
+        for task in select_tasks_by_date(tasks, date):
+            print(org_format_task(task), "\n")
+
+    else:
+        for task in tasks:
+            print(org_format_task(task), "\n")
 
 
 def parse_args():
@@ -49,17 +55,13 @@ def extract_tasks_from_file(filepath):
 
 def select_tasks_by_date(tasks, date):
 
-    selected_tasks = []
-
     for task in tasks:
         due_date_timestamp = task["task"]["dueDate"]
         if due_date_timestamp in ("", 0):
             continue
         due_datetime = datetime.fromtimestamp(int(str(due_date_timestamp)[:-3]))
         if due_datetime.date() == date:
-            selected_tasks.append(task)
-
-    return selected_tasks
+            yield task
 
 
 def org_format_task(task):
