@@ -10,9 +10,18 @@ class TestCase(unittest.TestCase):
 
         tasks = tasks_to_org.extract_tasks_from_file("sample.json")
         self.assertTrue(type(tasks) == list)
-        
+
         if len(tasks) > 0:
             self.assertTrue(type(tasks[0]) == dict)
+
+
+    def test_extract_list_data_from_file(self):
+
+        list_data = tasks_to_org.extract_list_data_from_file("sample.json")
+        self.assertTrue(type(list_data) == list)
+
+        if len(list_data) > 0:
+            self.assertTrue(type(list_data[0]) == dict)
 
 
     def test_org_format_task(self):

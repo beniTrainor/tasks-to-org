@@ -13,6 +13,27 @@ def main():
 
     tasks = extract_tasks_from_file(args.tasksfile)
 
+    if args.list is not None:
+        list_data = extract_list_data_from_file(args.tasksfile)
+
+        # Task items in the JSON data don't have the name of the list they
+        # belong to. Instead, they have the UUID. So, in order to filter by
+        # the list name the matching UUID needs to be found.
+        matching_list_uuid = None
+        for list_data_item in list_data:
+            if list_data_item["name"] == args.list:
+                matching_list_uuid = list_data_item["uuid"]
+        if matching_list_uuid is None:
+            print("Error: list not found.")
+            exit(1)
+
+        # Task items sometimes have more than one list assigned to them. (This
+        # I guess is because it stores a history of the lists it belonged to.)
+        # So, all but the last list in that history need to be ignored, the
+        # last one is the one it currently belongs to.
+        tasks = [task for task in tasks
+                 if task["caldavTasks"][-1]["calendar"] == matching_list_uuid]
+
     date = None
     if args.today:
         date = datetime.now().date()
@@ -36,10 +57,14 @@ def parse_args():
         description="Converts data from Android Tasks App into org-mode tasks.")
 
     parser.add_argument("tasksfile", type=str, help="path of the tasks file")
+
     parser.add_argument("--today", action="store_true",
                         help="select tasks with today as due date")
     parser.add_argument("--tomorrow", action="store_true",
                         help="select tasks with tomorrow as due date")
+
+    parser.add_argument("--list", type=str,
+                        help="select tasks from a given LIST")
 
     return parser.parse_args()
 
@@ -50,6 +75,18 @@ def extract_tasks_from_file(filepath):
         data = json.load(file)
 
     return data["data"]["tasks"]
+
+
+def extract_list_data_from_file(filepath):
+    """
+    Returns a list of dictionaries with data of each list created in the Tasks
+    App.
+    """
+
+    with open(filepath) as file:
+        data = json.load(file)
+
+    return data["data"]["caldavCalendars"]
 
 
 def select_tasks_by_date(tasks, date):
