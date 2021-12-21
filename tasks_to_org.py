@@ -13,18 +13,17 @@ def main():
 
     tasks = extract_tasks_from_file(args.tasksfile)
 
+    date = None
     if args.today:
         date = datetime.now().date()
-        for task in select_tasks_by_date(tasks, date):
-            print(org_format_task(task), "\n")
-
     elif args.tomorrow:
         date = datetime.now().date() + timedelta(days=1)
-        for task in select_tasks_by_date(tasks, date):
-            print(org_format_task(task), "\n")
 
-    else:
+    if date is None:
         for task in tasks:
+            print(org_format_task(task), "\n")
+    else:
+        for task in select_tasks_by_date(tasks, date):
             print(org_format_task(task), "\n")
 
 
