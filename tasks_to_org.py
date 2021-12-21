@@ -34,6 +34,12 @@ def main():
         tasks = [task for task in tasks
                  if task["caldavTasks"][-1]["calendar"] == matching_list_uuid]
 
+
+    if args.tag is not None:
+        tasks = [task for task in tasks
+                 if args.tag in map(lambda x: x["name"], task["tags"])]
+
+
     date = None
     if args.today:
         date = datetime.now().date()
@@ -65,6 +71,8 @@ def parse_args():
 
     parser.add_argument("--list", type=str,
                         help="select tasks from a given LIST")
+    parser.add_argument("--tag", type=str,
+                        help="select tasks with a given TAG")
 
     return parser.parse_args()
 
