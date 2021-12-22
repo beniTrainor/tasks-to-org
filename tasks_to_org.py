@@ -45,13 +45,11 @@ def main():
         date = datetime.now().date()
     elif args.tomorrow:
         date = datetime.now().date() + timedelta(days=1)
+    if date is not None:
+        tasks = list(select_tasks_by_date(tasks, date))
 
-    if date is None:
-        for task in tasks:
-            print(org_format_task(task), "\n")
-    else:
-        for task in select_tasks_by_date(tasks, date):
-            print(org_format_task(task), "\n")
+    for task in tasks:
+        print(org_format_task(task), "\n")
 
 
 def parse_args():
