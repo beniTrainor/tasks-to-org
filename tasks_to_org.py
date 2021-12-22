@@ -48,7 +48,7 @@ def main():
     if date is not None:
         tasks = list(select_tasks_by_date(tasks, date))
 
-    for task in tasks:
+    for task in sorted(tasks, key=lambda task: task["task"]["dueDate"]):
         print(org_format_task(task), "\n")
 
 
